@@ -28,13 +28,15 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  char* dev = argv[1];
+  const char* dev = argv[1];
   char errbuf[PCAP_ERRBUF_SIZE];
   pcap_t* handle = pcap_open_live(dev, BUFSIZ, 1, 1000, errbuf);
   if (handle == NULL) {
     fprintf(stderr, "couldn't open device %s: %s\n", dev, errbuf);
     return -1;
   }
+
+  const char* bad_host = argv[2];
 
   while (true) {
     struct pcap_pkthdr* header;
@@ -44,17 +46,24 @@ int main(int argc, char* argv[]) {
     if (res == -1 || res == -2) break;
     printf("----------%u bytes captured----------\n", header->caplen);
     
-    Eth_header *eth = (Eth_header*) packet;
+    const Eth_header *eth = (Eth_header*) packet;
 
     // check ip packet
     if(ntohs(eth->ether_type) != ETHERTYPE_IP) continue;
 
-    IP_header *ip = (IP_header*)++eth;
+    const IP_header *ip = (IP_header*)(eth + 1);
 
     // check tcp packet
     if(ip->protocol != IPTYPE_TCP) continue;
 
-    TCP_header *tcp = (TCP_header*)++ip;
+    const TCP_header *tcp = (TCP_header*)((uint8_t*)ip + (ip->header_len << 2));
+
+    const uint8_t *tcp_data = (uint8_t*)((uint8_t*)tcp + (tcp->hlen << 2));
+
+    // check http packet
+    if(!is_http(tcp_data)) continue;
+
+    const uint8_t *http = tcp_data;
 
     
     

@@ -25,11 +25,11 @@ bool get_param(const uint8_t* http, const char* param, char** out, int* out_len)
 	}
 }
 
-bool is_http(const uint8_t* tcp){
+bool is_http(const uint8_t* tcp_data){
 	char* chk_list[] = {"GET", "POST", "HEAD", "PUT", "DELETE", "OPTIONS"};
 
 	for(int i = 0; i < 6; i++){
-		if(!memcmp(tcp, chk_list[i], strlen(chk_list[i]))) return true;
+		if(!memcmp(tcp_data, chk_list[i], strlen(chk_list[i]))) return true;
 	}
 	return false;
 }
