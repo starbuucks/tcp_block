@@ -1,6 +1,7 @@
 #include <pcap.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <arpa/inet.h>
 #include <netinet/ether.h>
 
@@ -48,25 +49,31 @@ int main(int argc, char* argv[]) {
     
     const Eth_header *eth = (Eth_header*) packet;
 
-    // check ip packet
+    // check if ip packet
     if(ntohs(eth->ether_type) != ETHERTYPE_IP) continue;
 
     const IP_header *ip = (IP_header*)(eth + 1);
 
-    // check tcp packet
+    // check if tcp packet
     if(ip->protocol != IPTYPE_TCP) continue;
 
     const TCP_header *tcp = (TCP_header*)((uint8_t*)ip + (ip->header_len << 2));
 
     const uint8_t *tcp_data = (uint8_t*)((uint8_t*)tcp + (tcp->hlen << 2));
 
-    // check http packet
+    // check if http packet
     if(!is_http(tcp_data)) continue;
 
     const uint8_t *http = tcp_data;
 
+    // check if bad_host
+    char* host;
+    int host_len;
+    get_param(http, "Host", &host, &host_len);
+    if(memcmp(bad_host, host, host_len)) continue;
     
     
+
   }
 
   pcap_close(handle);
