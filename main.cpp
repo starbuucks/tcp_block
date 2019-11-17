@@ -46,15 +46,15 @@ int main(int argc, char* argv[]) {
 
     const IP_header *ip = (IP_header*)(eth + 1);
 
-    print_packet("before", (uint8_t*)ip, 20);
-    IP_header *new_ip = (IP_header*)ip;
-    calculate_IP_checksum(new_ip);
-    print_packet("after", (uint8_t*)new_ip, 20);
-
     // check if tcp packet
     if(ip->protocol != IPTYPE_TCP) continue;
 
     const TCP_header *tcp = (TCP_header*)((uint8_t*)ip + (ip->header_len << 2));
+
+    print_packet("before", (uint8_t*)tcp, 20);
+    TCP_header *new_tcp = (TCP_header*)tcp;
+    calculate_TCP_checksum(ip, new_tcp, header->caplen - sizeof(Eth_header) - (ip->header_len << 2));
+    print_packet("after", (uint8_t*)new_tcp, 20);
 
     const uint8_t *tcp_data = (uint8_t*)((uint8_t*)tcp + (tcp->hlen << 2));
 

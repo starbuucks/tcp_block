@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
 #include "packet.h"
 #include "packet_util.h"
 
@@ -21,6 +22,31 @@ void calculate_IP_checksum(IP_header* ip){
 	ip->checksum = (uint16_t)sum;
 }
 
-void calculate_TCP_checksum(TCP_header* tcp){
-	
+void calculate_TCP_checksum(const IP_header* ip, TCP_header* tcp, int tcp_length){
+	int i;
+
+	tcp->checksum = 0;
+	uint32_t sum = 0;
+
+	for(i = 0; i < tcp_length; i += 2)
+		sum += *(uint16_t*)((uint8_t*)tcp + i);
+
+	if(tcp_length % 2 == 1)
+		sum += *((uint8_t*)tcp + tcp_length - 1);
+
+	sum += ip->src_ip >> 16;
+	sum += ip->src_ip & 0xffff;
+	sum += ip->dst_ip >> 16;
+	sum += ip->dst_ip & 0xffff;
+
+	sum += htons(ip->protocol);
+	sum += htons(tcp_length);
+
+	sum = (sum >> 16) + (sum & 0xffff);
+	sum = (sum >> 16) + (sum & 0xffff);
+
+	sum = ~sum;
+
+	tcp->checksum = (uint16_t)sum;
+
 }
