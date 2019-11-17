@@ -42,6 +42,7 @@ typedef struct _ip_header{
 	uint16_t checksum;
 	uint32_t src_ip;
 	uint32_t dst_ip;
+	uint32_t options[10];
 } IP_header;
 
 typedef struct _tcp_header{
@@ -55,6 +56,7 @@ typedef struct _tcp_header{
 	uint16_t window;
 	uint16_t checksum;
 	uint16_t urg_ptr;
+	uint32_t options[10];
 } TCP_header;
 
 void print_MAC(const char* label, MAC mac);

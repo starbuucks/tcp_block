@@ -7,16 +7,8 @@
 
 #include "packet.h"
 #include "http_util.h"
+#include "packet_util.h"
 #include "block.h"
-
-void dump(unsigned char* buf, int size) {
-	int i;
-	for (i = 0; i < size; i++) {
-		if (i % 16 == 0)
-			printf("\n");
-		printf("%02x ", buf[i]);
-	}
-}
 
 void usage() {
   printf("syntax: tcp_block <interface> <host>\n");
@@ -54,6 +46,11 @@ int main(int argc, char* argv[]) {
 
     const IP_header *ip = (IP_header*)(eth + 1);
 
+    print_packet("before", (uint8_t*)ip, 20);
+    IP_header *new_ip = (IP_header*)ip;
+    calculate_IP_checksum(new_ip);
+    print_packet("after", (uint8_t*)new_ip, 20);
+
     // check if tcp packet
     if(ip->protocol != IPTYPE_TCP) continue;
 
@@ -72,7 +69,7 @@ int main(int argc, char* argv[]) {
     get_param(http, "Host", &host, &host_len);
     if(memcmp(bad_host, host, host_len)) continue;
     
-    
+
 
   }
 
