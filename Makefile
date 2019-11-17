@@ -1,7 +1,7 @@
 all: tcp_block
 
 tcp_block: main.o packet.o http_util.o block.o
-	g++ -g -o tcp_block main.o packet.o http_util.o block.o
+	g++ -g -o tcp_block main.o packet.o http_util.o block.o -lpcap
 
 block.o: block.cpp block.h
 	g++ -g -c -o block.o block.cpp

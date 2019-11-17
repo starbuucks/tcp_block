@@ -2,6 +2,20 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <arpa/inet.h>
+#include <netinet/ether.h>
+
+#include "packet.h"
+#include "http_util.h"
+#include "block.h"
+
+void dump(unsigned char* buf, int size) {
+	int i;
+	for (i = 0; i < size; i++) {
+		if (i % 16 == 0)
+			printf("\n");
+		printf("%02x ", buf[i]);
+	}
+}
 
 void usage() {
   printf("syntax: tcp_block <interface> <host>\n");
@@ -30,8 +44,19 @@ int main(int argc, char* argv[]) {
     if (res == -1 || res == -2) break;
     printf("----------%u bytes captured----------\n", header->caplen);
     
-    
+    Eth_header *eth = (Eth_header*) packet;
 
+    // check ip packet
+    if(ntohs(eth->ether_type) != ETHERTYPE_IP) continue;
+
+    IP_header *ip = (IP_header*)++eth;
+
+    // check tcp packet
+    if(ip->protocol != IPTYPE_TCP) continue;
+
+    TCP_header *tcp = (TCP_header*)++ip;
+
+    
     
   }
 

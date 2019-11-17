@@ -4,6 +4,8 @@
 
 using namespace std;
 
+#define IPTYPE_TCP 0x06
+
 typedef struct _mac{
 	uint8_t i[6];
 } MAC;
@@ -35,6 +37,9 @@ typedef struct _ip_header{
 	uint16_t identification;
 	uint16_t frag_offset : 13;
 	uint8_t flag : 3;
+	uint8_t ttl;
+	uint8_t protocol;
+	uint16_t checksum;
 	uint32_t src_ip;
 	uint32_t dst_ip;
 } IP_header;
