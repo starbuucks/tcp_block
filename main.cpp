@@ -8,7 +8,7 @@
 #include "packet.h"
 #include "http_util.h"
 #include "packet_util.h"
-#include "block.h"
+#include "tcp_block.h"
 
 void usage() {
   printf("syntax: tcp_block <interface> <host>\n");
@@ -31,37 +31,34 @@ int main(int argc, char* argv[]) {
 
   const char* bad_host = argv[2];
 
-  while (true) {
-    struct pcap_pkthdr* header;
-    const u_char* packet;
+  struct pcap_pkthdr* header;
+  const u_char* packet;
+
+  do {
     int res = pcap_next_ex(handle, &header, &packet);
     if (res == 0) continue;
     if (res == -1 || res == -2) break;
     printf("----------%u bytes captured----------\n", header->caplen);
     
-    const Eth_header *eth = (Eth_header*) packet;
+
+    Eth_header *eth = (Eth_header*) packet;
 
     // check if ip packet
     if(ntohs(eth->ether_type) != ETHERTYPE_IP) continue;
 
-    const IP_header *ip = (IP_header*)(eth + 1);
+    IP_header *ip = (IP_header*)(eth + 1);
 
     // check if tcp packet
     if(ip->protocol != IPTYPE_TCP) continue;
 
-    const TCP_header *tcp = (TCP_header*)((uint8_t*)ip + (ip->header_len << 2));
+    TCP_header *tcp = (TCP_header*)((uint8_t*)ip + (ip->header_len << 2));
 
-    print_packet("before", (uint8_t*)tcp, 20);
-    TCP_header *new_tcp = (TCP_header*)tcp;
-    calculate_TCP_checksum(ip, new_tcp, header->caplen - sizeof(Eth_header) - (ip->header_len << 2));
-    print_packet("after", (uint8_t*)new_tcp, 20);
-
-    const uint8_t *tcp_data = (uint8_t*)((uint8_t*)tcp + (tcp->hlen << 2));
+    uint8_t *tcp_data = (uint8_t*)((uint8_t*)tcp + (tcp->hlen << 2));
 
     // check if http packet
     if(!is_http(tcp_data)) continue;
 
-    const uint8_t *http = tcp_data;
+    uint8_t *http = tcp_data;
 
     // check if bad_host
     char* host;
@@ -69,9 +66,23 @@ int main(int argc, char* argv[]) {
     get_param(http, "Host", &host, &host_len);
     if(memcmp(bad_host, host, host_len)) continue;
     
+    //printf("detected\n");
 
+    print_packet("detected", packet, 108);
 
-  }
+    // if(backward_RST(dev, (u_char*)packet, ip, tcp))
+    // 	printf("error in backward RST\n");
+
+    // if(forward_RST(dev, (u_char*)packet, ip, tcp))
+    // 	printf("error in forward RST\n");
+
+    if(backward_FIN(dev, (u_char*)packet, ip, tcp))
+    	printf("error in backward FIN\n");
+
+    // if(forward_FIN(dev, (u_char*)packet, ip, tcp))
+    // 	printf("error in forward FIN\n");
+
+  } while (memset((u_char*)packet, 0, header->caplen) || true);
 
   pcap_close(handle);
   return 0;

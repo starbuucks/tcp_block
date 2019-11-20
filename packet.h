@@ -5,6 +5,16 @@
 using namespace std;
 
 #define IPTYPE_TCP 0x06
+#define TCPFLAG_URG 0x20
+#define TCPFLAG_ACK 0x10
+#define TCPFLAG_PSH 0x08
+#define TCPFLAG_RST 0x04
+#define TCPFLAG_SYN 0x02
+#define TCPFLAG_FIN 0x01
+#define IPHLEN_MIN 0b1001
+#define IPHLEN_MAX 0b1111
+#define TCPHLEN_MIN 0b0101
+#define TCPHLEN_MAX 0b1111
 
 typedef struct _mac{
 	uint8_t i[6];

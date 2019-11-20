@@ -1,9 +1,20 @@
+#include <pcap.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include "packet.h"
 #include "packet_util.h"
+
+int send_packet(const char * dev, uint8_t* pkt, int packet_len){
+	// send packet (https://blog.pages.kr/290)
+	char errbuf[PCAP_ERRBUF_SIZE];
+	pcap_t *fp;
+	fp = pcap_open_live(dev, 65536, 0, 1000, errbuf);
+	int e=pcap_sendpacket(fp, pkt, packet_len);
+	if(e) perror(errbuf);
+	return e;
+}
 
 void calculate_IP_checksum(IP_header* ip){
 	int i;
