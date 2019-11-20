@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
     int res = pcap_next_ex(handle, &header, &packet);
     if (res == 0) continue;
     if (res == -1 || res == -2) break;
-    printf("----------%u bytes captured----------\n", header->caplen);
+    //printf("----------%u bytes captured----------\n", header->caplen);
     
 
     Eth_header *eth = (Eth_header*) packet;
@@ -65,19 +65,17 @@ int main(int argc, char* argv[]) {
     int host_len;
     get_param(http, "Host", &host, &host_len);
     if(memcmp(bad_host, host, host_len)) continue;
-    
-    //printf("detected\n");
 
-    print_packet("detected", packet, 108);
+    //print_packet("detected", packet, 108);
 
-    // if(backward_RST(dev, (u_char*)packet, header->caplen))
-    // 	printf("error in backward RST\n");
+    if(backward_RST(dev, (u_char*)packet, header->caplen))
+    	printf("error in backward RST\n");
 
-    // if(forward_RST(dev, (u_char*)packet, header->caplen))
-    // 	printf("error in forward RST\n");
+    if(forward_RST(dev, (u_char*)packet, header->caplen))
+    	printf("error in forward RST\n");
 
-    if(backward_FIN(dev, (u_char*)packet, header->caplen))
-    	printf("error in backward FIN\n");
+    // if(backward_FIN(dev, (u_char*)packet, header->caplen))
+    // 	printf("error in backward FIN\n");
 
     // if(forward_FIN(dev, (u_char*)packet, header->caplen))
     // 	printf("error in forward FIN\n");

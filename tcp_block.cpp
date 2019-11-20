@@ -15,20 +15,21 @@ using namespace std;
 char block_msg[] = "HTTP/1.0 200 OK\x0d\x0aContent-Length: 214\x0d\x0aContent-Type: text/html\x0d\x0a\x0d\x0a<html><head><meta http-equiv=\"pragma\" content=\"no-cache\"><meta http-equiv=\"refresh\" content=\"0;url=\'http://www.warning.or.kr/i1.html\'\"></head></html>";
 
 void forward_block(u_char* pkt, IP_header* ip, TCP_header* tcp, char* tcp_data, int new_data_len){
-	int tcp_data_len = ntohs(ip->total_len) - tcp->hlen << 2;
+	uint32_t newseq = htonl(ntohl(tcp->seq_num) + ntohs(ip->total_len) - calculate_IP_hlen(ip->header_len, tcp->hlen));
 
 	ip->total_len = htons(calculate_IP_hlen(ip->header_len, TCPHLEN_MIN) + new_data_len);
 
 	calculate_IP_checksum(ip);
 
-	tcp->seq_num = htonl(ntohl(tcp->seq_num) + tcp_data_len);
+	tcp->seq_num = newseq;
 	
 	tcp->hlen = TCPHLEN_MIN;
+	tcp->window = 0;
 
 	if(new_data_len != 0)
-		memcpy((u_char*)tcp + tcp->hlen, tcp_data, new_data_len);
+		memcpy((u_char*)tcp + (tcp->hlen << 2), tcp_data, new_data_len);
 
-	calculate_TCP_checksum(ip, tcp, tcp->hlen << 2 + new_data_len);
+	calculate_TCP_checksum(ip, tcp, (tcp->hlen << 2) + new_data_len);
 }
 
 void backward_block(u_char* pkt, IP_header* ip, TCP_header* tcp, char* tcp_data, int tcp_data_len){
