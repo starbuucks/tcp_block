@@ -70,16 +70,16 @@ int main(int argc, char* argv[]) {
 
     print_packet("detected", packet, 108);
 
-    // if(backward_RST(dev, (u_char*)packet, ip, tcp))
+    // if(backward_RST(dev, (u_char*)packet, header->caplen))
     // 	printf("error in backward RST\n");
 
-    // if(forward_RST(dev, (u_char*)packet, ip, tcp))
+    // if(forward_RST(dev, (u_char*)packet, header->caplen))
     // 	printf("error in forward RST\n");
 
-    if(backward_FIN(dev, (u_char*)packet, ip, tcp))
+    if(backward_FIN(dev, (u_char*)packet, header->caplen))
     	printf("error in backward FIN\n");
 
-    // if(forward_FIN(dev, (u_char*)packet, ip, tcp))
+    // if(forward_FIN(dev, (u_char*)packet, header->caplen))
     // 	printf("error in forward FIN\n");
 
   } while (memset((u_char*)packet, 0, header->caplen) || true);
